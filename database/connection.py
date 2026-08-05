@@ -2,6 +2,10 @@ import os
 from contextlib import contextmanager
 
 import mysql.connector
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 def get_database_config():

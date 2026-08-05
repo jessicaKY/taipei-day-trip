@@ -6,6 +6,10 @@ from getpass import getpass
 from pathlib import Path
 
 import mysql.connector
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 DEFAULT_JSON_PATH = Path("data/taipei-attractions.json")

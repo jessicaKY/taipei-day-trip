@@ -1,0 +1,17 @@
+[Unit]
+Description=Taipei Day Trip FastAPI service
+After=network.target mysql.service
+Requires=mysql.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/taipei-day-trip
+EnvironmentFile=/home/ubuntu/taipei-day-trip/.env
+ExecStart=/home/ubuntu/taipei-day-trip/.venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
