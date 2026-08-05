@@ -1,7 +1,7 @@
 from database.connection import get_connection
 
 
-PAGE_SIZE = 12
+PAGE_SIZE = 8
 
 
 def build_attraction(row):
