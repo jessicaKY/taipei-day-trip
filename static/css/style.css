@@ -202,6 +202,7 @@ a {
   gap: 0;
   padding: 0;
   border-radius: 5px;
+  overflow: hidden;
   background: var(--white);
   box-shadow: 0 0 20px #aabbcc;
 }
