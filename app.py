@@ -1,6 +1,8 @@
 from fastapi import *
 from fastapi.responses import FileResponse
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from typing import Optional
 from database.queries import (
 	get_attraction_by_id,
 	get_attractions,
@@ -10,11 +12,14 @@ from database.queries import (
 
 app=FastAPI()
 
+# Front-end assets are kept separate from the HTML file.
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/api/attractions")
 async def api_attractions(
-	page: int = Query(0, ge=0),
-	keyword: str | None = None,
-	category: str | None = None,
+	page: int = Query(..., ge=0),
+	category: Optional[str] = None,
+	keyword: Optional[str] = None,
 ):
 	try:
 		return get_attractions(page=page, keyword=keyword, category=category)
@@ -24,10 +29,10 @@ async def api_attractions(
 			content={"error": True, "message": "伺服器內部錯誤"},
 		)
 
-@app.get("/api/attraction/{attraction_id}")
-async def api_attraction(attraction_id: int):
+@app.get("/api/attraction/{attractionId}")
+async def api_attraction(attractionId: int):
 	try:
-		attraction = get_attraction_by_id(attraction_id)
+		attraction = get_attraction_by_id(attractionId)
 		if attraction is None:
 			return JSONResponse(
 				status_code=400,
