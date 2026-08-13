@@ -12,7 +12,7 @@ def build_attraction(row):
         "description": row["description"],
         "address": row["address"],
         "transport": row["transport"],
-        "mrt": row["mrt"],
+        "mrt": None if row["mrt"] in ("", "None") else row["mrt"],
         "lat": float(row["latitude"]),
         "lng": float(row["longitude"]),
         "images": row["images"].split(",") if row["images"] else [],
@@ -126,7 +126,7 @@ def get_mrts():
             SELECT m.name
             FROM mrt_stations AS m
             JOIN attractions AS a ON a.mrt_id = m.id
-            WHERE m.name <> ''
+            WHERE m.name NOT IN ('', 'None')
             GROUP BY m.id, m.name
             ORDER BY COUNT(a.id) DESC, m.id ASC
             """
