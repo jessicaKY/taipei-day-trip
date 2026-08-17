@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/css/attraction.css?v=1.0.24" />
+    <link rel="stylesheet" href="/static/css/attraction.css?v=1.0.25" />
     <link rel="stylesheet" href="/static/css/navigation.css?v=1.0.5" />
     <script src="/static/js/attraction.js?v=1.0.0" defer></script>
   </head>
@@ -47,11 +47,11 @@
                 <span class="date-control__placeholder" aria-hidden="true">yyyy/mm/dd</span>
               </div>
             </div>
-            <fieldset class="booking-field booking-field--time">
-              <legend>選擇時間：</legend>
+            <div class="booking-field booking-field--time" role="radiogroup" aria-labelledby="tour-time-label">
+              <span class="booking-field__label" id="tour-time-label">選擇時間：</span>
               <label><input type="radio" name="time" value="morning" checked />上半天</label>
               <label><input type="radio" name="time" value="afternoon" />下半天</label>
-            </fieldset>
+            </div>
             <div class="booking-field booking-field--price">
               <span class="booking-field__label">導覽費用：</span>
               <span id="tour-price">新台幣 2000 元</span>

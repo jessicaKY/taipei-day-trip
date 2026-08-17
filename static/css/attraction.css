@@ -209,7 +209,7 @@ main { flex: 1 0 auto; }
 
 .date-control input:valid + .date-control__placeholder { display: none; }
 .booking-field--time { height: 22px; margin-bottom: 15px; }
-.booking-field--time legend { float: left; width: 86px; padding: 0; }
+.booking-field--time .booking-field__label { flex: 0 0 86px; width: 86px; }
 .booking-field--time label { display: flex; align-items: center; margin-right: 5px; font-weight: 500; white-space: nowrap; }
 .booking-field--time input {
   appearance: none;
@@ -437,6 +437,17 @@ main { flex: 1 0 auto; }
     grid-template-columns: max-content minmax(0, 193px);
     column-gap: 5px;
   }
+  .booking-field--time {
+    display: grid;
+    grid-template-columns: 86px max-content max-content;
+    column-gap: 5px;
+    align-items: center;
+  }
+  .booking-field--time .booking-field__label {
+    width: 86px;
+    min-width: 86px;
+  }
+  .booking-field--time label { margin: 0; }
   .date-control {
     position: relative;
     width: 100%;
@@ -535,5 +546,7 @@ main { flex: 1 0 auto; }
 
 @media (max-width: 359px) {
   .booking-form { padding-right: 14px; padding-left: 14px; }
-  .booking-field--time legend, .booking-field__label { width: 82px; }
+  .booking-field--time { grid-template-columns: 82px max-content max-content; }
+  .booking-field--time .booking-field__label { width: 82px; min-width: 82px; }
+  .booking-field__label { width: 82px; }
 }
