@@ -412,7 +412,11 @@ main { flex: 1 0 auto; }
     margin-top: 20px;
     overflow: visible;
   }
-  .profile h1 { height: 33px; }
+  .profile h1 {
+    height: auto;
+    min-height: 33px;
+    line-height: 28px;
+  }
   .profile__summary { margin: 15px 0 20px; }
   .booking-form {
     display: flex;
