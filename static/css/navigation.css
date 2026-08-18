@@ -1,4 +1,9 @@
 .site-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1000;
   flex: 0 0 auto;
   height: 54px;
   border: 0;
