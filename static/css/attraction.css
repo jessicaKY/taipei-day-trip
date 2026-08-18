@@ -372,6 +372,30 @@ main { flex: 1 0 auto; }
   }
 }
 
+@media (min-width: 601px) and (max-width: 772px) {
+  .attraction-hero {
+    height: auto;
+    min-height: 500px;
+    align-items: stretch;
+  }
+
+  .slideshow,
+  .profile {
+    height: auto;
+    min-height: 400px;
+  }
+
+  .slideshow__image { height: 100%; }
+
+  .profile { overflow: visible; }
+
+  .profile h1 {
+    height: auto;
+    min-height: 33px;
+    line-height: 28px;
+  }
+}
+
 @media (max-width: 600px) {
   .navigation {
     justify-content: flex-start;
