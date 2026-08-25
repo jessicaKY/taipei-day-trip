@@ -1,7 +1,53 @@
 from database.connection import get_connection
+import hashlib
+import hmac
+import secrets
 
 
 PAGE_SIZE = 8
+
+
+def hash_password(password):
+    salt = secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 120_000)
+    return f"pbkdf2_sha256${salt}${digest.hex()}"
+
+
+def verify_password(password, stored_password):
+    if not stored_password.startswith("pbkdf2_sha256$"):
+        return hmac.compare_digest(password, stored_password)
+    _, salt, expected = stored_password.split("$", 2)
+    actual = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 120_000).hex()
+    return hmac.compare_digest(actual, expected)
+
+
+def create_user(name, email, password):
+    with get_connection() as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)",
+                (name, email, hash_password(password)),
+            )
+            connection.commit()
+            return cursor.lastrowid
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
+
+
+def get_user_by_email(email):
+    with get_connection() as connection:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT id, name, email, password FROM users WHERE email = %s LIMIT 1",
+            (email,),
+        )
+        user = cursor.fetchone()
+        cursor.close()
+    return user
 
 
 def build_attraction(row):

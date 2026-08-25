@@ -3,14 +3,40 @@ from fastapi.responses import FileResponse
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
+from datetime import datetime, timedelta, timezone
+import os
+import re
+
+import jwt
+from jwt import InvalidTokenError
+from mysql.connector import IntegrityError
+from pydantic import BaseModel
 from database.queries import (
+	create_user,
 	get_attraction_by_id,
 	get_attractions,
 	get_categories,
 	get_mrts,
+	get_user_by_email,
+	verify_password,
 )
 
 app=FastAPI()
+
+JWT_SECRET = os.getenv("JWT_SECRET_KEY", "change-this-secret-in-production")
+JWT_ALGORITHM = "HS256"
+EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+
+
+class SignUpBody(BaseModel):
+	name: str
+	email: str
+	password: str
+
+
+class SignInBody(BaseModel):
+	email: str
+	password: str
 
 # Front-end assets are kept separate from the HTML file.
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -64,6 +90,73 @@ async def api_categories():
 			status_code=500,
 			content={"error": True, "message": "伺服器內部錯誤"},
 		)
+
+
+@app.post("/api/user")
+async def api_user_signup(body: SignUpBody):
+	name = body.name.strip()
+	email = body.email.strip().lower()
+	if not name or not EMAIL_PATTERN.match(email) or len(body.password) < 4:
+		return JSONResponse(
+			status_code=400,
+			content={"error": True, "message": "姓名、電子信箱或密碼格式不正確"},
+		)
+	try:
+		create_user(name, email, body.password)
+		return {"ok": True}
+	except IntegrityError:
+		return JSONResponse(
+			status_code=400,
+			content={"error": True, "message": "此電子信箱已經註冊"},
+		)
+	except Exception:
+		return JSONResponse(
+			status_code=500,
+			content={"error": True, "message": "伺服器內部錯誤"},
+		)
+
+
+@app.put("/api/user/auth")
+async def api_user_signin(body: SignInBody):
+	email = body.email.strip().lower()
+	try:
+		user = get_user_by_email(email)
+		if user is None or not verify_password(body.password, user["password"]):
+			return JSONResponse(
+				status_code=400,
+				content={"error": True, "message": "電子信箱或密碼錯誤"},
+			)
+		payload = {
+			"id": user["id"],
+			"name": user["name"],
+			"email": user["email"],
+			"exp": datetime.now(timezone.utc) + timedelta(days=7),
+		}
+		token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+		return {"token": token}
+	except Exception:
+		return JSONResponse(
+			status_code=500,
+			content={"error": True, "message": "伺服器內部錯誤"},
+		)
+
+
+@app.get("/api/user/auth")
+async def api_user_auth(authorization: Optional[str] = Header(default=None)):
+	if not authorization or not authorization.startswith("Bearer "):
+		return {"data": None}
+	token = authorization.removeprefix("Bearer ").strip()
+	try:
+		payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+		return {
+			"data": {
+				"id": payload["id"],
+				"name": payload["name"],
+				"email": payload["email"],
+			}
+		}
+	except (InvalidTokenError, KeyError, TypeError):
+		return {"data": None}
 
 # Static Pages (Never Modify Code in this Block)
 @app.get("/", include_in_schema=False)
