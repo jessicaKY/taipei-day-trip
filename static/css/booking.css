@@ -1,89 +1,63 @@
-:root {
-  --cyan: #448899;
-  --gray-70: #666666;
-  --gray-50: #757575;
-  --gray-20: #e8e8e8;
-  --white: #ffffff;
+:root { --cyan:#448899; --gray-70:#666; --gray-50:#757575; --gray-20:#e8e8e8; --white:#fff; }
+* { box-sizing:border-box; }
+[hidden] { display:none !important; }
+html { min-width:320px; }
+body { display:flex; flex-direction:column; min-height:100vh; margin:0; padding-top:54px; color:var(--gray-70); background:var(--white); font-family:"Noto Sans TC",Arial,sans-serif; }
+button,input { font:inherit; }
+a { color:inherit; text-decoration:none; }
+.booking-page { width:100%; flex:1 0 auto; }
+.booking-headline { width:980px; min-height:27px; margin:40px auto 30px; padding:2px 0 1px; font-size:19px; font-weight:700; line-height:24px; overflow-wrap:anywhere; }
+.booking-headline strong { color:inherit; }
+.booking-empty { width:1000px; height:24px; margin:0 auto 40px; padding:0 10px; font-size:16px; font-weight:500; line-height:24px; }
+.booking-content hr { width:1200px; height:1px; margin:40px auto; border:0; background:var(--gray-20); }
+.booking-trip-separator,.booking-contact-separator,.booking-payment-separator { width:1200px; }
+.booking-trip { position:relative; display:flex; width:980px; height:200px; margin:0 auto; }
+.booking-trip__picture { width:250px; height:200px; overflow:hidden; }
+.booking-trip__picture img { width:100%; height:100%; object-fit:cover; }
+.booking-trip__info { width:700px; height:170px; margin-left:30px; }
+.booking-trip__info h2,.booking-form-section h2 { height:24px; margin:0 0 20px; color:var(--cyan); font-size:16px; font-weight:700; line-height:24px; }
+.booking-trip__info dl { margin:0; font-size:16px; }
+.booking-trip__info dl div { display:flex; height:34px; align-items:center; }
+.booking-trip__info dt { width:53px; font-weight:700; }
+.booking-trip__info dd { margin:0; font-weight:400; }
+.booking-trip__delete { position:absolute; top:0; right:0; width:30px; height:30px; padding:0; border:0; background:transparent; cursor:pointer; }
+.booking-trip__delete img { width:30px; height:30px; display:block; }
+.booking-form-section { width:980px; margin:0 auto; }
+.booking-form-section h2 { color:var(--gray-70); margin-bottom:20px; font-size:19px; }
+.booking-form-section label { display:flex; width:281px; height:53px; align-items:flex-start; font-size:16px; line-height:38px; white-space:nowrap; }
+.booking-form-section input { width:200px; height:38px; padding:10px; border:1px solid var(--gray-20); border-radius:5px; color:#000; font-size:16px; line-height:18px; }
+.booking-form-section p { margin:0; font-size:16px; font-weight:700; line-height:24px; }
+.booking-payment { height:188px; }
+.booking-confirm { display:flex; flex-direction:column; align-items:flex-end; width:980px; height:100px; margin:0 auto 40px; }
+.booking-confirm strong { height:20px; font-size:16px; line-height:20px; }
+.booking-confirm button { height:36px; margin-top:22px; padding:10px 20px; border:0; border-radius:5px; color:#fff; background:var(--cyan); font-size:19px; line-height:16px; cursor:pointer; }
+.site-footer { display:flex; flex:0 0 104px; align-items:center; justify-content:center; min-height:104px; color:#fff; background:var(--gray-50); font-size:16px; font-weight:700; }
+.booking-is-empty .booking-page { flex:0 0 161px; }
+.booking-is-empty .site-footer { flex:1 0 auto; align-items:flex-start; padding-top:45px; }
+
+@media (max-width:1200px) {
+  .booking-content hr,.booking-trip-separator,.booking-contact-separator,.booking-payment-separator { width:calc(100% - 20px); }
 }
-
-* { box-sizing: border-box; }
-html { min-width: 320px; }
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  margin: 0;
-  padding-top: 54px;
-  color: var(--gray-70);
-  background: var(--white);
-  font-family: "Noto Sans TC", Arial, sans-serif;
+@media (max-width:1020px) {
+  .booking-headline { width:calc(100% - 20px); }
+  .booking-empty { width:100%; }
+  .booking-trip,.booking-form-section,.booking-confirm { width:calc(100% - 20px); }
 }
-
-button, input { font: inherit; }
-a { color: inherit; text-decoration: none; }
-
-.booking-page {
-  flex: 0 0 161px;
-  width: 1000px;
-  height: 161px;
-  margin: 0 auto;
-  padding-top: 40px;
-}
-
-.booking-headline {
-  height: 27px;
-  margin: 0 0 30px;
-  padding: 2px 10px 1px;
-  font-size: 19px;
-  font-weight: 700;
-  line-height: 24px;
-}
-
-.booking-headline strong { color: var(--cyan); }
-
-.booking-empty {
-  height: 24px;
-  margin: 0;
-  padding: 0 10px;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 24px;
-}
-
-.site-footer {
-  display: flex;
-  flex: 1 0 auto;
-  align-items: flex-start;
-  justify-content: center;
-  min-height: 104px;
-  padding-top: 45px;
-  color: var(--white);
-  background: var(--gray-50);
-  font-size: 16px;
-  font-weight: 700;
-}
-
-@media (max-width: 1020px) {
-  .booking-page { width: 100%; }
-}
-
-@media (max-width: 600px) {
-  .booking-page {
-    height: auto;
-    min-height: 161px;
-    padding-top: 40px;
-    padding-bottom: 40px;
-  }
-  .booking-headline {
-    width: 100%;
-    height: auto;
-    min-height: 27px;
-    margin-bottom: 30px;
-    padding-right: 10px;
-    padding-left: 10px;
-    overflow-wrap: anywhere;
-    white-space: normal;
-  }
-  .booking-empty { padding-right: 10px; padding-left: 10px; }
-  .site-footer { min-height: 425px; }
+@media (max-width:601px) {
+  .booking-headline { width:calc(100% - 20px); height:auto; min-height:27px; margin-top:40px; margin-bottom:30px; padding:2px 0 1px; white-space:normal; }
+  .booking-empty { padding:0 10px; }
+  .booking-trip { display:block; height:430px; }
+  .booking-trip__picture { width:100%; height:200px; }
+  .booking-trip__picture img { width:100%; height:256px; transform:translateY(-28px); }
+  .booking-trip__info { width:100%; height:200px; margin:30px 0 0; }
+  .booking-trip__info h2 { margin-bottom:20px; }
+  .booking-trip__delete { top:400px; right:0; }
+  .booking-content hr { width:calc(100% - 20px); height:1px; margin:40px 10px; background:var(--gray-20); }
+  .booking-trip + hr { margin-top:30px; }
+  .booking-form-section { width:calc(100% - 20px); }
+  .booking-form-section:not(.booking-payment) { height:256px; }
+  .booking-form-section p { width:100%; min-height:48px; }
+  .booking-confirm { width:calc(100% - 20px); margin-bottom:40px; }
+  .site-footer { flex-basis:104px; }
+  .booking-is-empty .site-footer { min-height:425px; }
 }

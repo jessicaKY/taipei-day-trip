@@ -12,13 +12,16 @@ from jwt import InvalidTokenError
 from mysql.connector import IntegrityError
 from pydantic import BaseModel
 from database.queries import (
+	delete_booking_by_user_id,
 	create_user,
+	get_booking_by_user_id,
 	get_attraction_by_id,
 	get_attractions,
 	get_categories,
 	get_mrts,
 	get_user_by_email,
 	verify_password,
+	upsert_booking,
 )
 
 app=FastAPI()
@@ -37,6 +40,26 @@ class SignUpBody(BaseModel):
 class SignInBody(BaseModel):
 	email: str
 	password: str
+
+
+class BookingBody(BaseModel):
+	attractionId: int
+	date: str
+	time: str
+	price: int
+
+
+def authenticated_user(authorization):
+	if not authorization or not authorization.startswith("Bearer "):
+		return None
+	try:
+		return jwt.decode(
+			authorization.removeprefix("Bearer ").strip(),
+			JWT_SECRET,
+			algorithms=[JWT_ALGORITHM],
+		)
+	except (InvalidTokenError, KeyError, TypeError):
+		return None
 
 # Front-end assets are kept separate from the HTML file.
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -157,6 +180,48 @@ async def api_user_auth(authorization: Optional[str] = Header(default=None)):
 		}
 	except (InvalidTokenError, KeyError, TypeError):
 		return {"data": None}
+
+
+@app.get("/api/booking")
+async def api_get_booking(authorization: Optional[str] = Header(default=None)):
+	user = authenticated_user(authorization)
+	if user is None:
+		return JSONResponse(status_code=403, content={"error": True, "message": "未登入系統，拒絕存取"})
+	try:
+		return {"data": get_booking_by_user_id(user["id"])}
+	except Exception:
+		return JSONResponse(status_code=500, content={"error": True, "message": "伺服器內部錯誤"})
+
+
+@app.post("/api/booking")
+async def api_create_booking(body: BookingBody, authorization: Optional[str] = Header(default=None)):
+	user = authenticated_user(authorization)
+	if user is None:
+		return JSONResponse(status_code=403, content={"error": True, "message": "未登入系統，拒絕存取"})
+	try:
+		booking_date = datetime.strptime(body.date, "%Y-%m-%d").date()
+		if body.attractionId < 1 or body.time not in ("morning", "afternoon") or body.price not in (2000, 2500):
+			raise ValueError
+		if get_attraction_by_id(body.attractionId) is None:
+			raise ValueError
+		upsert_booking(user["id"], body.attractionId, booking_date, body.time, body.price)
+		return {"ok": True}
+	except ValueError:
+		return JSONResponse(status_code=400, content={"error": True, "message": "建立預訂失敗，輸入不正確或其他原因"})
+	except Exception:
+		return JSONResponse(status_code=500, content={"error": True, "message": "伺服器內部錯誤"})
+
+
+@app.delete("/api/booking")
+async def api_delete_booking(authorization: Optional[str] = Header(default=None)):
+	user = authenticated_user(authorization)
+	if user is None:
+		return JSONResponse(status_code=403, content={"error": True, "message": "未登入系統，拒絕存取"})
+	try:
+		delete_booking_by_user_id(user["id"])
+		return {"ok": True}
+	except Exception:
+		return JSONResponse(status_code=500, content={"error": True, "message": "伺服器內部錯誤"})
 
 # Static Pages (Never Modify Code in this Block)
 @app.get("/", include_in_schema=False)

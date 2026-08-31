@@ -7,11 +7,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/static/css/navigation.css?v=1.0.7" />
-    <link rel="stylesheet" href="/static/css/booking.css?v=1.0.1" />
+    <link rel="stylesheet" href="/static/css/navigation.css?v=1.0.10" />
+    <link rel="stylesheet" href="/static/css/booking.css?v=2.0.7" />
     <link rel="stylesheet" href="/static/css/auth.css?v=1.0.0" />
     <script src="/static/js/auth.js?v=1.0.0" defer></script>
-    <script src="/static/js/booking.js?v=1.0.0" defer></script>
+    <script src="/static/js/navigation-booking.js?v=1.0.0" defer></script>
+    <script src="/static/js/booking.js?v=2.0.0" defer></script>
   </head>
   <body>
     <header class="site-header">
@@ -25,7 +26,42 @@
     </header>
     <main class="booking-page">
       <h1 class="booking-headline">您好，<strong id="booking-user-name">旅客</strong>，待預訂的行程如下：</h1>
-      <p class="booking-empty" id="booking-empty">目前沒有任何待預訂的行程</p>
+      <p class="booking-empty" id="booking-empty" hidden>目前沒有任何待預訂的行程</p>
+      <div class="booking-content" id="booking-content" hidden>
+        <section class="booking-trip">
+          <div class="booking-trip__picture"><img id="booking-image" src="" alt="" /></div>
+          <div class="booking-trip__info">
+            <h2>台北一日遊：<span id="booking-attraction-name"></span></h2>
+            <dl>
+              <div><dt>日期：</dt><dd id="booking-date"></dd></div>
+              <div><dt>時間：</dt><dd id="booking-time"></dd></div>
+              <div><dt>費用：</dt><dd>新台幣 <span id="booking-price"></span> 元</dd></div>
+              <div><dt>地點：</dt><dd id="booking-address"></dd></div>
+            </dl>
+          </div>
+          <button class="booking-trip__delete" id="delete-booking" type="button" aria-label="刪除預訂行程"><img src="/static/images/icon_delete.png" alt="" /></button>
+        </section>
+        <hr class="booking-trip-separator" />
+        <section class="booking-form-section">
+          <h2>您的聯絡資訊</h2>
+          <label>聯絡姓名：<input id="contact-name" type="text" /></label>
+          <label>連絡信箱：<input id="contact-email" type="email" /></label>
+          <label>手機號碼：<input id="contact-phone" type="tel" /></label>
+          <p>請保持手機暢通，準時到達，導覽人員將用手機與您聯繫，務必留下正確的聯絡方式。</p>
+        </section>
+        <hr class="booking-contact-separator" />
+        <section class="booking-form-section booking-payment">
+          <h2>信用卡付款資訊</h2>
+          <label>卡片號碼：<input inputmode="numeric" placeholder="**** **** **** ****" /></label>
+          <label>過期時間：<input inputmode="numeric" placeholder="MM / YY" /></label>
+          <label>驗證密碼：<input inputmode="numeric" placeholder="CVV" /></label>
+        </section>
+        <hr class="booking-payment-separator" />
+        <section class="booking-confirm">
+          <strong>總價：新台幣 <span id="booking-total"></span> 元</strong>
+          <button type="button">確認訂購並付款</button>
+        </section>
+      </div>
     </main>
     <footer class="site-footer">COPYRIGHT © 2021 台北一日遊</footer>
   </body>
