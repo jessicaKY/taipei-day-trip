@@ -7,6 +7,7 @@
   flex: 0 0 auto;
   height: 54px;
   border: 0;
+  border-bottom: 1px solid #e8e8e8;
   background: #ffffff;
   font-family: Arial, "Noto Sans TC", sans-serif;
 }
@@ -97,12 +98,6 @@
   }
 }
 
-@media (min-width: 601px) {
-  .site-header {
-    border-bottom: 1px solid #e8e8e8;
-  }
-}
-
 @media (max-width: 600px) {
   .navigation {
     justify-content: flex-start;
@@ -178,5 +173,27 @@
     font-size: 16px;
     font-weight: 500;
     line-height: 13.3px;
+  }
+}
+
+@media (max-width: 353px) {
+  .navigation__links {
+    top: 5px;
+    right: 10px;
+    left: auto;
+    width: 150px;
+    height: 44px;
+    align-items: flex-start;
+  }
+
+  .navigation__links > a,
+  .navigation__member {
+    flex: 0 0 75px;
+    width: 75px;
+    height: 44px;
+    padding: 0 10px;
+    line-height: 20px;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
 }

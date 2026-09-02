@@ -191,3 +191,78 @@ def get_categories():
         cursor.close()
 
     return [row[0] for row in rows]
+
+
+def get_booking_by_user_id(user_id):
+    with get_connection() as connection:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT
+              b.attraction_id, b.booking_date, b.booking_time, b.price,
+              a.name, a.address,
+              (SELECT ai.image_url
+               FROM attraction_images AS ai
+               WHERE ai.attraction_id = a.id
+               ORDER BY ai.position
+               LIMIT 1) AS image
+            FROM bookings AS b
+            JOIN attractions AS a ON a.id = b.attraction_id
+            WHERE b.user_id = %s
+            LIMIT 1
+            """,
+            (user_id,),
+        )
+        row = cursor.fetchone()
+        cursor.close()
+    if row is None:
+        return None
+    return {
+        "attraction": {
+            "id": row["attraction_id"],
+            "name": row["name"],
+            "address": row["address"],
+            "image": row["image"],
+        },
+        "date": row["booking_date"].isoformat(),
+        "time": row["booking_time"],
+        "price": row["price"],
+    }
+
+
+def upsert_booking(user_id, attraction_id, booking_date, booking_time, price):
+    with get_connection() as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO bookings
+                  (user_id, attraction_id, booking_date, booking_time, price)
+                VALUES (%s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                  attraction_id = VALUES(attraction_id),
+                  booking_date = VALUES(booking_date),
+                  booking_time = VALUES(booking_time),
+                  price = VALUES(price)
+                """,
+                (user_id, attraction_id, booking_date, booking_time, price),
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
+
+
+def delete_booking_by_user_id(user_id):
+    with get_connection() as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute("DELETE FROM bookings WHERE user_id = %s", (user_id,))
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
