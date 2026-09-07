@@ -1,4 +1,5 @@
 from database.connection import get_connection
+import json
 import hashlib
 import hmac
 import secrets
@@ -260,6 +261,60 @@ def delete_booking_by_user_id(user_id):
         cursor = connection.cursor()
         try:
             cursor.execute("DELETE FROM bookings WHERE user_id = %s", (user_id,))
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
+
+
+def create_unpaid_order(order_number, user_id, price, trip, contact):
+    with get_connection() as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                """INSERT INTO orders
+                (order_number, user_id, price, status, contact_name, contact_email, contact_phone)
+                VALUES (%s, %s, %s, 'UNPAID', %s, %s, %s)""",
+                (order_number, user_id, price, contact["name"], contact["email"], contact["phone"]),
+            )
+            order_id = cursor.lastrowid
+            attraction = trip["attraction"]
+            cursor.execute(
+                """INSERT INTO order_trips
+                (order_id, attraction_id, attraction_name, attraction_address, attraction_image, trip_date, trip_time)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                (order_id, attraction["id"], attraction["name"], attraction["address"],
+                 attraction["image"], trip["date"], trip["time"]),
+            )
+            connection.commit()
+            return order_id
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
+
+
+def save_payment_result(order_id, tappay_result):
+    paid = tappay_result.get("status") == 0
+    with get_connection() as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                """INSERT INTO payments
+                (order_id, tappay_status, message, rec_trade_id, raw_response)
+                VALUES (%s, %s, %s, %s, %s)""",
+                (order_id, int(tappay_result.get("status", -1)), str(tappay_result.get("msg", ""))[:500],
+                 tappay_result.get("rec_trade_id"), json.dumps(tappay_result, ensure_ascii=False)),
+            )
+            if paid:
+                cursor.execute("UPDATE orders SET status='PAID', paid_at=NOW() WHERE id=%s", (order_id,))
+                cursor.execute(
+                    "DELETE FROM bookings WHERE user_id=(SELECT user_id FROM orders WHERE id=%s)",
+                    (order_id,),
+                )
             connection.commit()
         except Exception:
             connection.rollback()

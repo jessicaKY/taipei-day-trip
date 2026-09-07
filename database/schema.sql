@@ -81,3 +81,48 @@ CREATE TABLE IF NOT EXISTS bookings (
   CONSTRAINT fk_bookings_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
   CONSTRAINT fk_bookings_attraction FOREIGN KEY (attraction_id) REFERENCES attractions (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS orders (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_number VARCHAR(50) NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  price INT UNSIGNED NOT NULL,
+  status ENUM('UNPAID', 'PAID') NOT NULL DEFAULT 'UNPAID',
+  contact_name VARCHAR(100) NOT NULL,
+  contact_email VARCHAR(255) NOT NULL,
+  contact_phone VARCHAR(30) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  paid_at TIMESTAMP NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_orders_number (order_number),
+  KEY idx_orders_user_id (user_id),
+  CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS order_trips (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  attraction_id BIGINT UNSIGNED NOT NULL,
+  attraction_name VARCHAR(255) NOT NULL,
+  attraction_address VARCHAR(255) NOT NULL,
+  attraction_image VARCHAR(512) NOT NULL,
+  trip_date DATE NOT NULL,
+  trip_time ENUM('morning', 'afternoon') NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_order_trips_order_id (order_id),
+  CONSTRAINT fk_order_trips_order FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE,
+  CONSTRAINT fk_order_trips_attraction FOREIGN KEY (attraction_id) REFERENCES attractions (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS payments (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  tappay_status INT NOT NULL,
+  message VARCHAR(500) NOT NULL,
+  rec_trade_id VARCHAR(40) NULL,
+  raw_response JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_payments_order_id (order_id),
+  CONSTRAINT fk_payments_order FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
