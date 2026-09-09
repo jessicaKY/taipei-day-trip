@@ -945,6 +945,28 @@ a {
 
 }
 
+@media (max-width: 353px) {
+  .navigation__links {
+    top: 5px;
+    right: 10px;
+    left: auto;
+    width: 150px;
+    height: 44px;
+    align-items: flex-start;
+  }
+
+  .navigation__links > a,
+  .navigation__member {
+    flex: 0 0 75px;
+    width: 75px;
+    height: 44px;
+    padding: 0 10px;
+    line-height: 20px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}
+
 @media (min-width: 350px) and (max-width: 371px) {
   .search input {
     -webkit-appearance: none;

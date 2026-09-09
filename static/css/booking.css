@@ -1,11 +1,11 @@
 :root { --cyan:#448899; --gray-70:#666; --gray-50:#757575; --gray-20:#e8e8e8; --white:#fff; }
 * { box-sizing:border-box; }
 [hidden] { display:none !important; }
-html { min-width:320px; }
-body { display:flex; flex-direction:column; min-height:100vh; margin:0; padding-top:54px; color:var(--gray-70); background:var(--white); font-family:"Noto Sans TC",Arial,sans-serif; }
+html { width:100%; min-width:320px; overflow-x:hidden; }
+body { display:flex; flex-direction:column; width:100%; max-width:100vw; min-height:100vh; margin:0; padding-top:54px; overflow-x:hidden; color:var(--gray-70); background:var(--white); font-family:"Noto Sans TC",Arial,sans-serif; }
 button,input { font:inherit; }
 a { color:inherit; text-decoration:none; }
-.booking-page { width:100%; flex:1 0 auto; }
+.booking-page { width:100%; max-width:100vw; flex:1 0 auto; overflow-x:hidden; }
 .booking-headline { width:980px; min-height:27px; margin:40px auto 30px; padding:2px 0 1px; font-size:19px; font-weight:700; line-height:24px; overflow-wrap:anywhere; }
 .booking-headline strong { color:inherit; }
 .booking-empty { width:1000px; height:24px; margin:0 auto 40px; padding:0 10px; font-size:16px; font-weight:500; line-height:24px; }
@@ -25,13 +25,18 @@ a { color:inherit; text-decoration:none; }
 .booking-form-section { width:980px; margin:0 auto; }
 .booking-form-section h2 { color:var(--gray-70); margin-bottom:20px; font-size:19px; }
 .booking-form-section label { display:flex; width:281px; height:53px; align-items:flex-start; font-size:16px; line-height:38px; white-space:nowrap; }
-.booking-form-section input { width:200px; height:38px; padding:10px; border:1px solid var(--gray-20); border-radius:5px; color:#000; font-size:16px; line-height:18px; }
+.booking-form-section input,.tpfield { display:block; width:200px; height:38px; padding:10px; border:1px solid var(--gray-20); border-radius:5px; color:#000; font-size:16px; line-height:18px; }
+.tpfield { padding:0; overflow:hidden; transition:border-color .15s,box-shadow .15s; }
+.tpfield.tappay-field-focus { border-color:#66afe9; box-shadow:0 0 5px rgba(102,175,233,.6); }
+.tpfield.is-valid { border-color:#e8e8e8; }
+.booking-payment__message { position:absolute; margin-top:0 !important; color:#c0392b; font-size:14px !important; font-weight:500 !important; }
 .booking-form-section p { margin:0; font-size:16px; font-weight:700; line-height:24px; }
-.booking-payment { height:188px; }
+.booking-payment { position:relative; height:188px; }
 .booking-confirm { display:flex; flex-direction:column; align-items:flex-end; width:980px; height:100px; margin:0 auto 40px; }
 .booking-confirm strong { height:20px; font-size:16px; line-height:20px; }
 .booking-confirm button { height:36px; margin-top:22px; padding:10px 20px; border:0; border-radius:5px; color:#fff; background:var(--cyan); font-size:19px; line-height:16px; cursor:pointer; }
-.site-footer { display:flex; flex:0 0 104px; align-items:center; justify-content:center; min-height:104px; color:#fff; background:var(--gray-50); font-size:16px; font-weight:700; }
+.booking-confirm button:disabled { opacity:.65; cursor:wait; }
+.site-footer { display:flex; flex:0 0 104px; align-items:center; justify-content:center; width:100%; max-width:100vw; min-height:104px; padding-right:10px; padding-left:10px; overflow:hidden; color:#fff; background:var(--gray-50); font-size:16px; font-weight:700; text-align:center; }
 .booking-is-empty .booking-page { flex:0 0 161px; }
 .booking-is-empty .site-footer { flex:1 0 auto; align-items:flex-start; padding-top:45px; }
 
@@ -50,6 +55,7 @@ a { color:inherit; text-decoration:none; }
   .booking-trip__picture { width:100%; height:200px; }
   .booking-trip__picture img { width:100%; height:256px; transform:translateY(-28px); }
   .booking-trip__info { width:100%; height:200px; margin:30px 0 0; }
+  .booking-trip__info dd { min-width:0; overflow-wrap:anywhere; }
   .booking-trip__info h2 { margin-bottom:20px; }
   .booking-trip__delete { top:400px; right:0; }
   .booking-content hr { width:calc(100% - 20px); height:1px; margin:40px 10px; background:var(--gray-20); }

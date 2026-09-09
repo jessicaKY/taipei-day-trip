@@ -8,8 +8,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/static/css/navigation.css?v=1.0.10" />
-    <link rel="stylesheet" href="/static/css/booking.css?v=2.0.7" />
+    <link rel="stylesheet" href="/static/css/booking.css?v=2.0.8" />
     <link rel="stylesheet" href="/static/css/auth.css?v=1.0.0" />
+    <script src="https://js.tappaysdk.com/sdk/tpdirect/v5.19.1" defer></script>
     <script src="/static/js/auth.js?v=1.0.0" defer></script>
     <script src="/static/js/navigation-booking.js?v=1.0.0" defer></script>
     <script src="/static/js/booking.js?v=2.0.0" defer></script>
@@ -52,14 +53,15 @@
         <hr class="booking-contact-separator" />
         <section class="booking-form-section booking-payment">
           <h2>信用卡付款資訊</h2>
-          <label>卡片號碼：<input inputmode="numeric" placeholder="**** **** **** ****" /></label>
-          <label>過期時間：<input inputmode="numeric" placeholder="MM / YY" /></label>
-          <label>驗證密碼：<input inputmode="numeric" placeholder="CVV" /></label>
+          <label>卡片號碼：<span class="tpfield" id="card-number"></span></label>
+          <label>過期時間：<span class="tpfield" id="card-expiration-date"></span></label>
+          <label>驗證密碼：<span class="tpfield" id="card-ccv"></span></label>
+          <p class="booking-payment__message" id="payment-message" role="alert" aria-live="polite"></p>
         </section>
         <hr class="booking-payment-separator" />
         <section class="booking-confirm">
           <strong>總價：新台幣 <span id="booking-total"></span> 元</strong>
-          <button type="button">確認訂購並付款</button>
+          <button id="confirm-order" type="button">確認訂購並付款</button>
         </section>
       </div>
     </main>
