@@ -1,0 +1,23 @@
+{
+  "name": "taipei-day-trip",
+  "version": "0.1.0",
+  "description": "使用台北一日遊 MCP 搜尋景點並建立待付款行程",
+  "author": {
+    "name": "Jessica Lin"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "台北一日遊",
+    "shortDescription": "搜尋台北景點並預定導覽行程",
+    "longDescription": "透過台北一日遊 MCP 搜尋景點、確認日期與時段，建立待付款行程並引導至 Booking 頁面。",
+    "developerName": "Jessica Lin",
+    "category": "Travel",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": [
+      "幫我預定台北市一日遊行程",
+      "搜尋捷運站附近的台北景點"
+    ],
+    "brandColor": "#448899"
+  },
+  "mcpServers": "./.mcp.json"
+}

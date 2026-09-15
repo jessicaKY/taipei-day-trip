@@ -51,6 +51,73 @@ def get_user_by_email(email):
     return user
 
 
+def save_mcp_token_hash(user_id, token_hash):
+    """每位會員只保留一把有效的 MCP 金鑰。"""
+    with get_connection() as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO user_mcp_tokens (user_id, token_hash)
+                VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE
+                  token_hash = VALUES(token_hash),
+                  updated_at = CURRENT_TIMESTAMP
+                """,
+                (user_id, token_hash),
+            )
+            connection.commit()
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
+
+
+def has_mcp_token_for_user(user_id):
+    with get_connection() as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT EXISTS(SELECT 1 FROM user_mcp_tokens WHERE user_id = %s)",
+            (user_id,),
+        )
+        exists = bool(cursor.fetchone()[0])
+        cursor.close()
+    return exists
+
+
+def find_user_id_by_mcp_token_hash(token_hash):
+    with get_connection() as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT user_id FROM user_mcp_tokens WHERE token_hash = %s LIMIT 1",
+            (token_hash,),
+        )
+        row = cursor.fetchone()
+        cursor.close()
+    return row[0] if row else None
+
+
+def search_attractions_for_mcp(keyword):
+    """回傳 MCP 作業指定的精簡景點欄位。"""
+    with get_connection() as connection:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT a.id, a.name, a.description
+            FROM attractions AS a
+            JOIN mrt_stations AS m ON a.mrt_id = m.id
+            WHERE a.name LIKE %s OR m.name = %s
+            ORDER BY a.id
+            LIMIT 50
+            """,
+            (f"%{keyword}%", keyword),
+        )
+        rows = cursor.fetchall()
+        cursor.close()
+    return rows
+
+
 def build_attraction(row):
     return {
         "id": row["id"],
@@ -229,6 +296,71 @@ def get_booking_by_user_id(user_id):
         "time": row["booking_time"],
         "price": row["price"],
     }
+
+
+def get_paid_orders_by_user_id(user_id):
+    """取得會員已付款的行程，最新訂單優先。"""
+    with get_connection() as connection:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT
+              o.order_number, o.price, o.paid_at,
+              o.contact_name, o.contact_email, o.contact_phone,
+              ot.attraction_id, ot.attraction_name, ot.attraction_address,
+              ot.attraction_image, ot.trip_date, ot.trip_time
+            FROM orders AS o
+            JOIN order_trips AS ot ON ot.order_id = o.id
+            WHERE o.user_id = %s AND o.status = 'PAID'
+            ORDER BY o.paid_at DESC, o.id DESC
+            """,
+            (user_id,),
+        )
+        rows = cursor.fetchall()
+        cursor.close()
+
+    return [
+        {
+            "number": row["order_number"],
+            "price": row["price"],
+            "paidAt": row["paid_at"].isoformat() if row["paid_at"] else None,
+            "trip": {
+                "attraction": {
+                    "id": row["attraction_id"],
+                    "name": row["attraction_name"],
+                    "address": row["attraction_address"],
+                    "image": row["attraction_image"],
+                },
+                "date": row["trip_date"].isoformat(),
+                "time": row["trip_time"],
+            },
+            "contact": {
+                "name": row["contact_name"],
+                "email": row["contact_email"],
+                "phone": row["contact_phone"],
+            },
+        }
+        for row in rows
+    ]
+
+
+def delete_paid_order_by_user_id(user_id, order_number):
+    """刪除目前會員指定的已付款行程紀錄。"""
+    with get_connection() as connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                "DELETE FROM orders WHERE user_id = %s AND order_number = %s AND status = 'PAID'",
+                (user_id, order_number),
+            )
+            deleted = cursor.rowcount == 1
+            connection.commit()
+            return deleted
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            cursor.close()
 
 
 def upsert_booking(user_id, attraction_id, booking_date, booking_time, price):
