@@ -104,8 +104,14 @@ def search_attractions_for_mcp(keyword):
         cursor = connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT a.id, a.name, a.description
+            SELECT
+              a.id,
+              a.name,
+              c.name AS category,
+              m.name AS mrt,
+              a.description
             FROM attractions AS a
+            JOIN categories AS c ON a.category_id = c.id
             JOIN mrt_stations AS m ON a.mrt_id = m.id
             WHERE a.name LIKE %s OR m.name = %s
             ORDER BY a.id
