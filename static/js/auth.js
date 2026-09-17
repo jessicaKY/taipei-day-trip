@@ -132,11 +132,10 @@ async function checkAuthStatus() {
     console.error(error);
   }
   if (!user) localStorage.removeItem(AUTH_TOKEN_KEY);
-  memberButton.textContent = user ? "登出系統" : "登入/註冊";
+  memberButton.textContent = user ? "會員中心" : "登入/註冊";
   memberButton.onclick = () => {
     if (user) {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      window.location.reload();
+      window.location.href = "/member";
     } else {
       openAuthDialog("signin");
     }

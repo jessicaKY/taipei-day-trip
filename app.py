@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 import os
 import re
 import secrets
+import hashlib
 import json
 from urllib.error import HTTPError
 from urllib.request import Request as UrlRequest, urlopen
@@ -18,8 +19,11 @@ from mysql.connector import IntegrityError
 from pydantic import BaseModel
 from database.queries import (
 	delete_booking_by_user_id,
+	delete_paid_order_by_user_id,
 	create_user,
 	get_booking_by_user_id,
+	get_paid_orders_by_user_id,
+	has_mcp_token_for_user,
 	get_attraction_by_id,
 	get_attractions,
 	get_categories,
@@ -29,7 +33,9 @@ from database.queries import (
 	upsert_booking,
 	create_unpaid_order,
 	save_payment_result,
+	save_mcp_token_hash,
 )
+from mcp_server import mcp_app
 
 def load_local_env():
 	try:
@@ -57,7 +63,7 @@ def request_tappay_payment(payload, partner_key):
 
 
 load_local_env()
-app=FastAPI()
+app=FastAPI(lifespan=mcp_app.lifespan)
 
 JWT_SECRET = os.getenv("JWT_SECRET_KEY", "change-this-secret-in-production")
 JWT_ALGORITHM = "HS256"
@@ -110,6 +116,11 @@ class OrderDetailBody(BaseModel):
 class OrderBody(BaseModel):
 	prime: str
 	order: OrderDetailBody
+
+
+def public_base_url(request: Request):
+	configured_url = os.getenv("PUBLIC_BASE_URL")
+	return configured_url.rstrip("/") if configured_url else str(request.base_url).rstrip("/")
 
 
 def authenticated_user(authorization):
@@ -245,6 +256,61 @@ async def api_user_auth(authorization: Optional[str] = Header(default=None)):
 		return {"data": None}
 
 
+@app.put("/api/member/token")
+async def api_generate_member_token(authorization: Optional[str] = Header(default=None)):
+	user = authenticated_user(authorization)
+	if user is None:
+		return JSONResponse(status_code=403, content={"error": True})
+	try:
+		token = secrets.token_urlsafe(48)
+		token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+		save_mcp_token_hash(user["id"], token_hash)
+		return {"ok": True, "token": token}
+	except Exception:
+		return JSONResponse(status_code=500, content={"error": True})
+
+
+@app.get("/api/member/mcp-config")
+async def api_member_mcp_config(request: Request, authorization: Optional[str] = Header(default=None)):
+	user = authenticated_user(authorization)
+	if user is None:
+		return JSONResponse(status_code=403, content={"error": True})
+	mcp_public_url = os.getenv("MCP_PUBLIC_URL", "http://43.212.248.6:8000/mcp/")
+	try:
+		return {
+			"data": {
+				"hostUrl": mcp_public_url,
+				"hasToken": has_mcp_token_for_user(user["id"]),
+			}
+		}
+	except Exception:
+		return JSONResponse(status_code=500, content={"error": True})
+
+
+@app.get("/api/member/orders")
+async def api_member_orders(authorization: Optional[str] = Header(default=None)):
+	user = authenticated_user(authorization)
+	if user is None:
+		return JSONResponse(status_code=403, content={"error": True})
+	try:
+		return {"data": get_paid_orders_by_user_id(user["id"])}
+	except Exception:
+		return JSONResponse(status_code=500, content={"error": True, "message": "歷史訂單載入失敗"})
+
+
+@app.delete("/api/member/orders/{order_number}")
+async def api_delete_member_order(order_number: str, authorization: Optional[str] = Header(default=None)):
+	user = authenticated_user(authorization)
+	if user is None:
+		return JSONResponse(status_code=403, content={"error": True})
+	try:
+		if not delete_paid_order_by_user_id(user["id"], order_number):
+			return JSONResponse(status_code=404, content={"error": True, "message": "找不到這筆行程紀錄"})
+		return {"ok": True}
+	except Exception:
+		return JSONResponse(status_code=500, content={"error": True, "message": "刪除行程紀錄失敗"})
+
+
 @app.get("/api/booking")
 async def api_get_booking(authorization: Optional[str] = Header(default=None)):
 	user = authenticated_user(authorization)
@@ -335,3 +401,9 @@ async def booking(request: Request):
 @app.get("/thankyou", include_in_schema=False)
 async def thankyou(request: Request):
 	return FileResponse("./static/thankyou.html", media_type="text/html")
+@app.get("/member", include_in_schema=False)
+async def member(request: Request):
+	return FileResponse("./static/member.html", media_type="text/html")
+
+
+app.mount("/mcp", mcp_app)
